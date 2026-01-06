@@ -77,3 +77,6 @@ htmlcov/
 
 # Thesis files
 Thesis-Presentation.pptx
+
+# Experiment plan (private)
+docs/experiment_plan.md
