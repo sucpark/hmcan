@@ -1,0 +1,395 @@
+# 평가 및 추론 가이드
+
+## 모델 평가
+
+### 기본 평가
+
+```bash
+# 테스트셋에서 평가
+python -m hmcan evaluate \
+    --checkpoint outputs/hmcan_yelp/checkpoints/best_model.pt \
+    --config outputs/hmcan_yelp/config.yaml
+```
+
+### 평가 옵션
+
+```bash
+python -m hmcan evaluate \
+    --checkpoint <체크포인트 경로> \  # 필수
+    --config <설정 파일 경로> \        # 선택 (자동 탐색)
+    --device cuda                      # 디바이스 지정
+```
+
+### 출력 예시
+
+```
+Evaluating HMCAN model
+Checkpoint: outputs/hmcan_yelp/checkpoints/best_model.pt
+
+Test Results:
+  Loss: 1.2345
+  Accuracy: 61.70%
+```
+
+## Python에서 평가
+
+### 단일 모델 평가
+
+```python
+import torch
+from hmcan.models import HMCAN
+from hmcan.data import YelpDataModule
+from hmcan.training import Trainer
+
+# 데이터 로드
+data_module = YelpDataModule(data_dir="data")
+data_module.setup()
+
+# 모델 로드
+model = HMCAN(vocab_size=len(data_module.vocabulary), num_classes=5)
+checkpoint = torch.load("outputs/hmcan_yelp/checkpoints/best_model.pt")
+model.load_state_dict(checkpoint["model_state_dict"])
+
+# 디바이스 설정
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+model.eval()
+
+# 평가
+trainer = Trainer(
+    model=model,
+    optimizer=torch.optim.Adam(model.parameters()),  # dummy
+    criterion=torch.nn.CrossEntropyLoss(),
+    device=device,
+)
+
+metrics = trainer.evaluate(data_module.test_dataloader())
+print(f"Test Accuracy: {metrics['accuracy'] * 100:.2f}%")
+```
+
+### 여러 모델 비교
+
+```python
+from hmcan.models import create_model
+
+models_to_compare = ["han", "hcan", "hmcan"]
+results = {}
+
+for model_name in models_to_compare:
+    # 모델 생성 및 로드
+    model = create_model(
+        model_name,
+        vocab_size=len(data_module.vocabulary),
+        pretrained_embeddings=data_module.pretrained_embeddings,
+    )
+
+    checkpoint_path = f"outputs/{model_name}_yelp/checkpoints/best_model.pt"
+    checkpoint = torch.load(checkpoint_path)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model = model.to(device)
+
+    # 평가
+    trainer = Trainer(model=model, ...)
+    metrics = trainer.evaluate(data_module.test_dataloader())
+    results[model_name] = metrics["accuracy"]
+
+# 결과 출력
+for name, acc in results.items():
+    print(f"{name.upper()}: {acc * 100:.2f}%")
+```
+
+---
+
+## 추론 (Inference)
+
+### 단일 문서 추론
+
+```python
+import torch
+from hmcan.models import HMCAN
+from hmcan.data import Vocabulary, DocumentPreprocessor
+
+# 모델 로드
+model = HMCAN(vocab_size=20000, num_classes=5)
+checkpoint = torch.load("outputs/hmcan_yelp/checkpoints/best_model.pt")
+model.load_state_dict(checkpoint["model_state_dict"])
+model.eval()
+
+# 어휘 사전 로드
+vocab = Vocabulary.load("data/processed/word2idx.json")
+
+# 전처리기
+preprocessor = DocumentPreprocessor()
+
+# 추론 함수
+def predict(text: str, model, vocab, preprocessor, device="cpu"):
+    """단일 텍스트에 대한 예측"""
+    model = model.to(device)
+
+    # 전처리
+    doc_indices = preprocessor.process_document(text, vocab)
+
+    if len(doc_indices) == 0:
+        return None, None
+
+    # 텐서 변환
+    max_words = max(len(sent) for sent in doc_indices)
+    num_sentences = len(doc_indices)
+
+    document = torch.zeros(num_sentences, max_words, dtype=torch.long)
+    sentence_lengths = []
+
+    for i, sent in enumerate(doc_indices):
+        document[i, :len(sent)] = torch.tensor(sent)
+        sentence_lengths.append(len(sent))
+
+    document = document.to(device)
+    sentence_lengths = torch.tensor(sentence_lengths, device=device)
+
+    # 추론
+    with torch.no_grad():
+        outputs = model(document, sentence_lengths)
+        logits = outputs["logits"]
+        probs = torch.softmax(logits, dim=-1)
+        pred_class = torch.argmax(probs, dim=-1).item()
+
+    return pred_class, probs.cpu().numpy()
+
+# 사용 예시
+text = "This restaurant was amazing! The food was delicious and service was excellent."
+pred, probs = predict(text, model, vocab, preprocessor)
+print(f"Predicted class: {pred + 1} stars")  # 0-4 → 1-5
+print(f"Probabilities: {probs}")
+```
+
+### 배치 추론
+
+```python
+def predict_batch(texts: list[str], model, vocab, preprocessor, device="cpu"):
+    """여러 텍스트에 대한 배치 예측"""
+    results = []
+
+    for text in texts:
+        pred, probs = predict(text, model, vocab, preprocessor, device)
+        results.append({
+            "text": text[:100] + "..." if len(text) > 100 else text,
+            "prediction": pred + 1 if pred is not None else None,
+            "confidence": float(probs.max()) if probs is not None else None,
+        })
+
+    return results
+
+# 사용 예시
+texts = [
+    "Terrible experience. Food was cold and waiter was rude.",
+    "Pretty good, nothing special but decent food.",
+    "Best restaurant in town! Highly recommend!",
+]
+
+results = predict_batch(texts, model, vocab, preprocessor)
+for r in results:
+    print(f"{r['prediction']} stars ({r['confidence']:.2%}): {r['text']}")
+```
+
+### Attention 시각화
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+def visualize_attention(text, model, vocab, preprocessor, device="cpu"):
+    """어텐션 가중치 시각화"""
+    model = model.to(device)
+
+    # 전처리
+    sentences = preprocessor.tokenize_document(text)
+    doc_indices = preprocessor.process_document(text, vocab)
+
+    if len(doc_indices) == 0:
+        return
+
+    # 텐서 변환
+    max_words = max(len(sent) for sent in doc_indices)
+    num_sentences = len(doc_indices)
+
+    document = torch.zeros(num_sentences, max_words, dtype=torch.long)
+    sentence_lengths = []
+
+    for i, sent in enumerate(doc_indices):
+        document[i, :len(sent)] = torch.tensor(sent)
+        sentence_lengths.append(len(sent))
+
+    document = document.to(device)
+    sentence_lengths_tensor = torch.tensor(sentence_lengths, device=device)
+
+    # 추론
+    with torch.no_grad():
+        outputs = model(document, sentence_lengths_tensor)
+        word_attn = outputs.get("word_attention")
+        sent_attn = outputs.get("sentence_attention")
+
+    # 시각화
+    if sent_attn is not None:
+        sent_attn = sent_attn.cpu().numpy().flatten()
+
+        fig, ax = plt.subplots(figsize=(10, 4))
+        ax.bar(range(len(sent_attn)), sent_attn)
+        ax.set_xlabel("Sentence Index")
+        ax.set_ylabel("Attention Weight")
+        ax.set_title("Sentence-level Attention")
+        plt.tight_layout()
+        plt.savefig("sentence_attention.png")
+        plt.show()
+
+    return word_attn, sent_attn
+
+# 사용 예시
+text = "The appetizers were okay. Main course was fantastic! Dessert was too sweet."
+word_attn, sent_attn = visualize_attention(text, model, vocab, preprocessor)
+```
+
+---
+
+## 성능 메트릭
+
+### 정확도 외 추가 메트릭
+
+```python
+from sklearn.metrics import classification_report, confusion_matrix
+import numpy as np
+
+def detailed_evaluation(model, data_loader, device):
+    """상세 평가 메트릭"""
+    model.eval()
+    all_preds = []
+    all_labels = []
+
+    with torch.no_grad():
+        for batch in data_loader:
+            document = batch["document"].to(device)
+            sentence_lengths = batch["sentence_lengths"].to(device)
+            labels = batch["label"]
+
+            outputs = model(document, sentence_lengths)
+            preds = torch.argmax(outputs["logits"], dim=-1)
+
+            all_preds.extend(preds.cpu().numpy().tolist())
+            all_labels.extend(labels.numpy().tolist())
+
+    # Classification Report
+    print("Classification Report:")
+    print(classification_report(
+        all_labels, all_preds,
+        target_names=["1 star", "2 stars", "3 stars", "4 stars", "5 stars"]
+    ))
+
+    # Confusion Matrix
+    cm = confusion_matrix(all_labels, all_preds)
+    print("\nConfusion Matrix:")
+    print(cm)
+
+    return all_preds, all_labels
+
+# 사용 예시
+preds, labels = detailed_evaluation(model, data_module.test_dataloader(), device)
+```
+
+### 예상 출력
+
+```
+Classification Report:
+              precision    recall  f1-score   support
+
+      1 star       0.58      0.62      0.60       200
+     2 stars       0.45      0.42      0.43       200
+     3 stars       0.52      0.48      0.50       200
+     4 stars       0.55      0.58      0.56       200
+     5 stars       0.72      0.75      0.73       200
+
+    accuracy                           0.57      1000
+   macro avg       0.56      0.57      0.56      1000
+weighted avg       0.56      0.57      0.56      1000
+
+Confusion Matrix:
+[[124  32  22  14   8]
+ [ 38  84  42  26  10]
+ [ 20  36  96  32  16]
+ [ 12  22  28 116  22]
+ [  8   6  12  24 150]]
+```
+
+---
+
+## 모델 내보내기
+
+### TorchScript 내보내기
+
+```python
+# 모델 로드
+model = HMCAN(vocab_size=20000, num_classes=5)
+model.load_state_dict(torch.load("best_model.pt")["model_state_dict"])
+model.eval()
+
+# TorchScript로 변환 (trace 방식)
+example_doc = torch.randint(0, 1000, (5, 20))
+example_lens = torch.tensor([20, 15, 18, 12, 10])
+
+# 주의: 동적 입력 크기로 인해 script 방식 권장
+traced_model = torch.jit.trace(model, (example_doc, example_lens))
+traced_model.save("hmcan_traced.pt")
+
+# 로드 및 사용
+loaded_model = torch.jit.load("hmcan_traced.pt")
+output = loaded_model(example_doc, example_lens)
+```
+
+### ONNX 내보내기
+
+```python
+import torch.onnx
+
+model.eval()
+example_doc = torch.randint(0, 1000, (5, 20))
+example_lens = torch.tensor([20, 15, 18, 12, 10])
+
+torch.onnx.export(
+    model,
+    (example_doc, example_lens),
+    "hmcan.onnx",
+    input_names=["document", "sentence_lengths"],
+    output_names=["logits"],
+    dynamic_axes={
+        "document": {0: "num_sentences", 1: "max_words"},
+        "sentence_lengths": {0: "num_sentences"},
+    },
+)
+```
+
+---
+
+## 문제 해결
+
+### 메모리 부족
+
+```python
+# 배치 크기 줄이기 (기본값 1이므로 문제 없음)
+# 긴 문서 잘라내기
+max_sentences = 30
+max_words = 50
+```
+
+### 느린 추론 속도
+
+```python
+# GPU 사용
+device = torch.device("cuda")
+model = model.to(device)
+
+# 배치 처리
+# 여러 문서를 한 번에 처리하려면 패딩 필요
+```
+
+### 어텐션이 None인 경우
+
+일부 모델 구성에서 어텐션 가중치가 반환되지 않을 수 있습니다.
+모델의 `forward()` 메서드를 확인하세요.

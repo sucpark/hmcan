@@ -30,6 +30,13 @@ Hierarchical Multi-head Cascaded Attention Network for Document Classification
    - 모델 비교
    - 커스텀 모델 생성
 
+5. [평가 및 추론](evaluation.md)
+   - 모델 평가
+   - 단일/배치 추론
+   - Attention 시각화
+   - 성능 메트릭
+   - 모델 내보내기 (TorchScript, ONNX)
+
 ## 빠른 시작
 
 ```bash
