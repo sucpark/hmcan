@@ -1,7 +1,13 @@
 """Training infrastructure."""
 
 from .trainer import Trainer
-from .callbacks import Callback, EarlyStopping, ModelCheckpoint, TensorBoardLogger
+from .callbacks import (
+    Callback,
+    EarlyStopping,
+    ModelCheckpoint,
+    TensorBoardLogger,
+    WandbLogger,
+)
 from .metrics import MetricsTracker
 
 __all__ = [
@@ -10,5 +16,6 @@ __all__ = [
     "EarlyStopping",
     "ModelCheckpoint",
     "TensorBoardLogger",
+    "WandbLogger",
     "MetricsTracker",
 ]

@@ -10,7 +10,7 @@ import torch.nn as nn
 from .config import Config
 from .data import YelpDataModule
 from .models import create_model
-from .training import Trainer, EarlyStopping, ModelCheckpoint, TensorBoardLogger
+from .training import Trainer, EarlyStopping, ModelCheckpoint, TensorBoardLogger, WandbLogger
 from .utils import set_seed, get_device, CheckpointManager
 
 
@@ -114,6 +114,23 @@ def train(config: Path, resume: Optional[Path], seed: Optional[int], device: Opt
 
     if cfg.use_tensorboard:
         callbacks.append(TensorBoardLogger(output_dir / "logs"))
+
+    if cfg.use_wandb:
+        wandb_config = {
+            "model": cfg.model.name,
+            "embedding_dim": cfg.model.embedding_dim,
+            "attention_dim": cfg.model.attention_dim,
+            "dropout": cfg.model.dropout,
+            "learning_rate": cfg.training.learning_rate,
+            "num_epochs": cfg.training.num_epochs,
+            "seed": cfg.seed,
+        }
+        callbacks.append(WandbLogger(
+            project="hmcan",
+            name=cfg.experiment_name,
+            config=wandb_config,
+            tags=[cfg.model.name],
+        ))
 
     # Setup trainer
     trainer = Trainer(

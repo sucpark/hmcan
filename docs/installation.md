@@ -76,6 +76,47 @@ python -m hmcan models
 python -c "from hmcan.models import HAN, HCAN, HMCAN; print('OK')"
 ```
 
+## Weights & Biases 설정 (선택)
+
+실험 추적을 위해 [Weights & Biases](https://wandb.ai)를 사용할 수 있습니다.
+
+### 1. 계정 생성
+
+[https://wandb.ai/site](https://wandb.ai/site)에서 무료 계정을 생성합니다.
+
+### 2. API 키 확인
+
+로그인 후 [https://wandb.ai/authorize](https://wandb.ai/authorize)에서 API 키를 복사합니다.
+
+### 3. 로그인
+
+```bash
+wandb login
+# 프롬프트가 나타나면 API 키 붙여넣기
+```
+
+또는 환경 변수로 설정:
+
+```bash
+export WANDB_API_KEY="your-api-key-here"
+```
+
+### 4. 설정 파일에서 활성화
+
+```yaml
+# configs/hmcan.yaml
+use_wandb: true
+```
+
+### 확인
+
+```bash
+# wandb 연결 테스트
+python -c "import wandb; wandb.login(); print('OK')"
+```
+
+> **참고**: wandb 없이도 TensorBoard로 학습을 모니터링할 수 있습니다.
+
 ## GPU 설정
 
 ### CUDA (NVIDIA GPU)

@@ -262,3 +262,75 @@ class TensorBoardLogger(Callback):
     def on_train_end(self, trainer: "Trainer") -> None:
         """Close writer."""
         self.writer.close()
+
+
+class WandbLogger(Callback):
+    """Log metrics to Weights & Biases."""
+
+    def __init__(
+        self,
+        project: str = "hmcan",
+        name: Optional[str] = None,
+        config: Optional[Dict] = None,
+        tags: Optional[List[str]] = None,
+        notes: Optional[str] = None,
+        log_model: bool = True,
+    ) -> None:
+        """
+        Initialize W&B logger.
+
+        Args:
+            project: W&B project name
+            name: Run name (auto-generated if None)
+            config: Hyperparameters to log
+            tags: Tags for the run
+            notes: Notes for the run
+            log_model: Whether to log model checkpoints as artifacts
+        """
+        import wandb
+
+        self.wandb = wandb
+        self.log_model = log_model
+        self.run = wandb.init(
+            project=project,
+            name=name,
+            config=config,
+            tags=tags,
+            notes=notes,
+            reinit=True,
+        )
+
+    def on_epoch_end(
+        self,
+        epoch: int,
+        train_metrics: Dict[str, float],
+        val_metrics: Dict[str, float],
+        trainer: "Trainer",
+    ) -> None:
+        """Log epoch metrics."""
+        log_dict = {"epoch": epoch}
+
+        for key, value in train_metrics.items():
+            log_dict[f"train/{key}"] = value
+        for key, value in val_metrics.items():
+            log_dict[f"val/{key}"] = value
+
+        # Log learning rate
+        log_dict["learning_rate"] = trainer.optimizer.param_groups[0]["lr"]
+
+        self.wandb.log(log_dict)
+
+    def on_train_end(self, trainer: "Trainer") -> None:
+        """Finish W&B run and optionally log model."""
+        if self.log_model and trainer.checkpoint_manager:
+            best_model_path = trainer.checkpoint_manager.checkpoint_dir / "best_model.pt"
+            if best_model_path.exists():
+                artifact = self.wandb.Artifact(
+                    name=f"model-{self.run.id}",
+                    type="model",
+                    description="Best model checkpoint",
+                )
+                artifact.add_file(str(best_model_path))
+                self.wandb.log_artifact(artifact)
+
+        self.wandb.finish()

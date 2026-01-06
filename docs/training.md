@@ -65,7 +65,10 @@ seed: 14
 device: auto                  # auto, cpu, cuda, mps
 output_dir: outputs
 experiment_name: hmcan_yelp
-use_tensorboard: true
+
+# 로깅
+use_tensorboard: true         # TensorBoard 사용
+use_wandb: false              # Weights & Biases 사용
 ```
 
 ## 학습 과정
@@ -124,6 +127,61 @@ tensorboard --logdir outputs/hmcan_yelp/logs
 - `train/accuracy`: 학습 정확도
 - `val/loss`: 검증 손실
 - `val/accuracy`: 검증 정확도
+
+## Weights & Biases 모니터링
+
+### 설정
+
+```yaml
+# configs/hmcan.yaml
+use_wandb: true
+```
+
+### 첫 사용 시 로그인
+
+```bash
+wandb login
+# API 키 입력 (https://wandb.ai/authorize 에서 확인)
+```
+
+### 학습 실행
+
+```bash
+python -m hmcan train --config configs/hmcan.yaml
+```
+
+### 기능
+
+| 기능 | 설명 |
+|------|------|
+| **실시간 대시보드** | 웹에서 학습 진행 상황 확인 |
+| **하이퍼파라미터 추적** | 모든 설정 자동 저장 |
+| **실험 비교** | 여러 실험 결과 비교 |
+| **모델 아티팩트** | best_model.pt 자동 저장 |
+| **팀 공유** | 링크로 결과 공유 |
+
+### 로깅되는 메트릭
+
+```
+train/loss          # 학습 손실
+train/accuracy      # 학습 정확도
+val/loss            # 검증 손실
+val/accuracy        # 검증 정확도
+learning_rate       # 학습률
+epoch               # 에폭
+```
+
+### 오프라인 모드
+
+인터넷 연결 없이 학습 후 나중에 동기화:
+
+```bash
+# 오프라인 모드로 학습
+WANDB_MODE=offline python -m hmcan train --config configs/hmcan.yaml
+
+# 나중에 동기화
+wandb sync outputs/hmcan_yelp/wandb/offline-run-*
+```
 
 ## 하이퍼파라미터 튜닝
 

@@ -1,5 +1,10 @@
 # HMCAN - Hierarchical Multichannel CNN-based Attention Network
 
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Weights & Biases](https://img.shields.io/badge/Weights_%26_Biases-FFCC33?logo=weightsandbiases&logoColor=black)](https://wandb.ai/)
+
 PyTorch implementation of hierarchical attention models for document classification.
 
 ## Models
@@ -143,7 +148,44 @@ data:
   train_ratio: 0.8         # Train split ratio
   val_ratio: 0.1           # Validation split ratio
   test_ratio: 0.1          # Test split ratio
+
+# Logging
+use_tensorboard: true      # Enable TensorBoard logging
+use_wandb: false           # Enable Weights & Biases logging
 ```
+
+## Experiment Tracking
+
+### TensorBoard
+
+```bash
+# View training logs
+tensorboard --logdir outputs/hmcan_yelp/logs
+```
+
+### Weights & Biases
+
+Enable W&B logging in your config:
+
+```yaml
+use_wandb: true
+```
+
+Or set via environment:
+
+```bash
+# Login to wandb (first time only)
+wandb login
+
+# Train with wandb enabled
+python -m hmcan train --config configs/hmcan.yaml
+```
+
+W&B features:
+- Real-time metrics visualization
+- Hyperparameter tracking
+- Model artifact versioning
+- Experiment comparison
 
 ## Results
 
@@ -154,6 +196,14 @@ Expected performance on Yelp reviews (10K samples):
 | HAN   | ~60.5%        |
 | HCAN  | ~58.6%        |
 | HMCAN | ~61.7%        |
+
+### Attention Visualization
+
+<!-- TODO: Add attention visualization images after training -->
+<!--
+![Sentence Attention](docs/images/sentence_attention.png)
+![Word Attention](docs/images/word_attention.png)
+-->
 
 ## Documentation
 
@@ -171,7 +221,8 @@ Expected performance on Yelp reviews (10K samples):
 - PyTorch >= 2.0
 - NLTK
 - scikit-learn
-- tensorboard
+- TensorBoard
+- Weights & Biases (wandb)
 
 ## License
 
