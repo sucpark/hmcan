@@ -94,6 +94,29 @@ python -m hmcan train --config configs/hcan.yaml
 python -m hmcan evaluate --checkpoint outputs/hmcan_yelp/checkpoints/best_model.pt
 ```
 
+## Supported Datasets
+
+| Dataset | Classes | Size | Task |
+|---------|---------|------|------|
+| **Yelp** | 5 | 650K | Sentiment (1-5 stars) |
+| **IMDB** | 2 | 50K | Sentiment (pos/neg) |
+| **AG News** | 4 | 120K | Topic (World, Sports, ...) |
+| **DBpedia** | 14 | 630K | Topic (Wikipedia) |
+| **Yahoo Answers** | 10 | 1.4M | Q&A Topic |
+| **20 Newsgroups** | 20 | 20K | Topic (Classic) |
+
+All datasets available via HuggingFace. See [docs/data.md](docs/data.md) for details.
+
+## Google Colab Notebooks
+
+Train models without local GPU:
+
+| Notebook | Description |
+|----------|-------------|
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sucpark/hmcan/blob/main/notebooks/train_hmcan_colab.ipynb) | Phase 1: HAN, HCAN, HMCAN |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sucpark/hmcan/blob/main/notebooks/train_bert_colab.ipynb) | Phase 2: BERT (Multi-dataset) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sucpark/hmcan/blob/main/notebooks/train_longformer_colab.ipynb) | Phase 3: Longformer, BigBird |
+
 ## Project Structure
 
 ```

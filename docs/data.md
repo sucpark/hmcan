@@ -2,7 +2,117 @@
 
 ## 개요
 
-HMCAN은 Yelp 리뷰 데이터셋을 사용하여 5-class 감성 분류를 수행합니다.
+HMCAN은 다양한 문서 분류 데이터셋을 지원합니다.
+
+---
+
+## 지원 데이터셋
+
+### 빠른 참조
+
+| 데이터셋 | 클래스 | 크기 | 문서 길이 | 태스크 |
+|----------|--------|------|----------|--------|
+| **Yelp** | 5 | 650K | 중간 | 감성 분류 |
+| **IMDB** | 2 | 50K | 중간 | 감성 분류 |
+| **AG News** | 4 | 120K | 짧음 | 토픽 분류 |
+| **DBpedia** | 14 | 630K | 짧음 | 토픽 분류 |
+| **Yahoo Answers** | 10 | 1.4M | 중간 | Q&A 분류 |
+| **20 Newsgroups** | 20 | 20K | 중간 | 토픽 분류 |
+
+### 상세 정보
+
+#### Yelp Review Full
+- **HuggingFace**: `yelp_review_full`
+- **클래스**: 1-5 star ratings
+- **용도**: 감성 분석 기준 데이터셋
+- **특징**: 다양한 길이의 리뷰, 균형 잡힌 클래스
+
+#### IMDB
+- **HuggingFace**: `imdb`
+- **클래스**: Positive / Negative
+- **용도**: 이진 감성 분류
+- **특징**: 영화 리뷰, 긴 텍스트
+
+#### AG News
+- **HuggingFace**: `ag_news`
+- **클래스**: World, Sports, Business, Sci/Tech
+- **용도**: 뉴스 토픽 분류
+- **특징**: 짧은 뉴스 기사
+
+#### DBpedia
+- **HuggingFace**: `dbpedia_14`
+- **클래스**: 14개 위키피디아 카테고리
+- **용도**: 대규모 다중 클래스 분류
+- **특징**: 구조화된 짧은 설명
+
+#### Yahoo Answers
+- **HuggingFace**: `yahoo_answers_topics`
+- **클래스**: 10개 토픽 (Science, Health, Sports, ...)
+- **용도**: Q&A 토픽 분류
+- **특징**: 질문 + 답변 결합
+
+#### 20 Newsgroups
+- **HuggingFace**: `SetFit/20_newsgroups`
+- **클래스**: 20개 뉴스그룹
+- **용도**: 다중 클래스 분류
+- **특징**: 클래식 NLP 벤치마크
+
+---
+
+## Python에서 사용
+
+### 빠른 로드
+
+```python
+from hmcan.data import quick_load, list_datasets
+
+# 사용 가능한 데이터셋 확인
+list_datasets()
+
+# 데이터셋 로드
+train, test, num_classes, labels = quick_load("imdb", max_samples=10000)
+print(f"Classes: {num_classes}")
+print(f"Labels: {labels}")
+```
+
+### 상세 로드
+
+```python
+from hmcan.data import load_classification_dataset, get_class_labels
+
+# 데이터셋 로드
+train_data, test_data, info = load_classification_dataset(
+    name="ag_news",
+    max_samples=10000,
+    seed=42
+)
+
+# 정보 확인
+print(f"Dataset: {info.name}")
+print(f"Classes: {info.num_classes}")
+print(f"Train: {len(train_data)}, Test: {len(test_data)}")
+
+# 클래스 레이블
+labels = get_class_labels("ag_news")
+print(f"Labels: {labels}")
+```
+
+### Colab에서 사용
+
+```python
+from datasets import load_dataset
+
+# 직접 HuggingFace에서 로드
+dataset = load_dataset("imdb")
+train = dataset["train"]
+test = dataset["test"]
+```
+
+---
+
+## Yelp 데이터 (기존 방식)
+
+HMCAN 원본 모델용 Yelp 데이터 준비:
 
 데이터 파이프라인:
 1. Yelp 리뷰 다운로드 (Hugging Face)
