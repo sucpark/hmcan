@@ -1,0 +1,41 @@
+# HMCAN (Hierarchical Multi-head Cascaded Attention Network) Configuration
+# Main model with dual embeddings and Conv1D attention
+
+model:
+  name: hmcan
+  vocab_size: 50000
+  embedding_dim: 50
+  attention_dim: 50
+  num_classes: 5
+  dropout: 0.1
+  conv_kernel_size: 3
+  freeze_pretrained: true
+
+training:
+  num_epochs: 30
+  learning_rate: 2.0e-5
+  weight_decay: 0.0
+  beta1: 0.9
+  beta2: 0.99
+  eps: 1.0e-8
+  max_grad_norm: 1.0
+  early_stopping: true
+  patience: 5
+
+data:
+  data_dir: data
+  vocab_path: data/processed/word2idx.json
+  embeddings_path: data/processed/embeddings_50d.npz
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  num_workers: 0
+
+seed: 14
+device: auto
+output_dir: outputs
+experiment_name: hmcan_yelp
+
+use_tensorboard: true
+use_wandb: false
+log_every_n_steps: 100
