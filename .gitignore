@@ -75,8 +75,8 @@ htmlcov/
 *.manifest
 *.spec
 
-# Thesis files
-Thesis-Presentation.pptx
-
 # Experiment plan (private)
 docs/experiment_plan.md
+
+# Research reports & thesis
+.research/
