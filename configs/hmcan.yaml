@@ -1,5 +1,5 @@
-# HMCAN (Hierarchical Multi-head Cascaded Attention Network) Configuration
-# Main model with dual embeddings and Conv1D attention
+# HMCAN (Hierarchical Multichannel CNN-based Attention Network) Configuration
+# Main model with dual embeddings (multichannel) and Conv1D attention
 
 model:
   name: hmcan

@@ -17,7 +17,7 @@ from .utils import set_seed, get_device, CheckpointManager
 @click.group()
 @click.version_option(version="0.1.0")
 def cli():
-    """HMCAN - Hierarchical Multi-head Cascaded Attention Network for Document Classification."""
+    """HMCAN - Hierarchical Multichannel CNN-based Attention Network for Document Classification."""
     pass
 
 

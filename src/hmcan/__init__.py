@@ -1,5 +1,5 @@
 """
-HMCAN - Hierarchical Multi-head Cascaded Attention Network
+HMCAN - Hierarchical Multichannel CNN-based Attention Network
 
 A PyTorch implementation of hierarchical attention models for document classification.
 Includes HAN, HCAN, and HMCAN architectures.

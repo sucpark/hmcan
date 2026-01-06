@@ -1,4 +1,4 @@
-# HMCAN - Hierarchical Multi-head Cascaded Attention Network
+# HMCAN - Hierarchical Multichannel CNN-based Attention Network
 
 PyTorch implementation of hierarchical attention models for document classification.
 
@@ -10,7 +10,7 @@ This repository includes three hierarchical attention models:
 |-------|-------------|--------------|
 | **HAN** | Hierarchical Attention Network | BiGRU + Additive Attention |
 | **HCAN** | Hierarchical Cascaded Attention Network | Multi-head Self-Attention + Positional Embeddings |
-| **HMCAN** | Hierarchical Multi-head Cascaded Attention Network | Dual Embeddings + Conv1D Q,K,V + Target Attention |
+| **HMCAN** | Hierarchical Multichannel CNN-based Attention Network | Dual Embeddings (Multichannel) + Conv1D Q,K,V + Target Attention |
 
 ## Architecture
 
@@ -184,7 +184,7 @@ If you use this code, please cite:
 ```bibtex
 @misc{hmcan2024,
   author = {sucpark},
-  title = {HMCAN: Hierarchical Multi-head Cascaded Attention Network},
+  title = {HMCAN: Hierarchical Multichannel CNN-based Attention Network},
   year = {2024},
   publisher = {GitHub},
   url = {https://github.com/sucpark/hmcan}

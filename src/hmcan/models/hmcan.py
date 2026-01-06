@@ -1,8 +1,8 @@
 """
-Hierarchical Multi-head Cascaded Attention Network (HMCAN) implementation.
+Hierarchical Multichannel CNN-based Attention Network (HMCAN) implementation.
 
 HMCAN is the main model with:
-    - Dual embeddings (pretrained + learnable)
+    - Dual embeddings (pretrained + learnable) as multichannel input
     - Conv1D Q,K,V projections
     - Self-attention with residual connections and layer normalization
     - Target attention for hierarchical aggregation
@@ -19,18 +19,18 @@ from .layers.encoder import HMCANEncoderBlock
 
 class HMCAN(BaseHierarchicalModel):
     """
-    Hierarchical Multi-head Cascaded Attention Network for document classification.
+    Hierarchical Multichannel CNN-based Attention Network for document classification.
 
     Architecture:
-        Dual Word Embedding (pretrained frozen + learnable)
+        Dual Word Embedding (pretrained frozen + learnable) as multichannel input
         -> Conv1D(Q,K,V) -> Self-Attention -> Residual + LayerNorm
         -> Dense -> Residual + LayerNorm -> Target Attention (Tw)
         -> Conv1D(Q,K,V) -> Self-Attention -> Residual + LayerNorm
         -> Dense -> Residual + LayerNorm -> Target Attention (Ts)
         -> Dense Classifier
 
-    Key features from original paper:
-        - Dual embeddings: pretrained (frozen) + learnable, summed together
+    Key features:
+        - Multichannel embeddings: pretrained (frozen) + learnable, summed together
         - Conv1D projections for Q, K, V (kernel=3, same padding, ReLU)
         - Scaled dot-product self-attention
         - Residual connections + Layer normalization

@@ -8,7 +8,7 @@
 |------|------|----------|
 | HAN | Hierarchical Attention Network | BiGRU + Additive Attention |
 | HCAN | Hierarchical Cascaded Attention Network | Multi-head Self-Attention + Positional |
-| HMCAN | Hierarchical Multi-head Cascaded Attention Network | Dual Embedding + Conv1D + Target Attention |
+| HMCAN | Hierarchical Multichannel CNN-based Attention Network | Dual Embedding (Multichannel) + Conv1D + Target Attention |
 
 ## 공통 구조
 
@@ -171,7 +171,7 @@ model = HCAN(
 
 ---
 
-## HMCAN (Hierarchical Multi-head Cascaded Attention Network)
+## HMCAN (Hierarchical Multichannel CNN-based Attention Network)
 
 ### 아키텍처
 

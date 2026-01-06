@@ -1,6 +1,6 @@
 # HMCAN 문서
 
-Hierarchical Multi-head Cascaded Attention Network for Document Classification
+Hierarchical Multichannel CNN-based Attention Network for Document Classification
 
 ## 목차
 
@@ -26,7 +26,7 @@ Hierarchical Multi-head Cascaded Attention Network for Document Classification
 4. [모델 아키텍처](models.md)
    - HAN (Hierarchical Attention Network)
    - HCAN (Hierarchical Cascaded Attention Network)
-   - HMCAN (Hierarchical Multi-head Cascaded Attention Network)
+   - HMCAN (Hierarchical Multichannel CNN-based Attention Network)
    - 모델 비교
    - 커스텀 모델 생성
 
