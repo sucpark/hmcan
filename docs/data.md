@@ -1,108 +1,108 @@
-# 데이터 준비 가이드
+# Data Preparation Guide
 
-## 개요
+## Overview
 
-HMCAN은 다양한 문서 분류 데이터셋을 지원합니다.
+HMCAN supports various document classification datasets.
 
 ---
 
-## 지원 데이터셋
+## Supported Datasets
 
-### 빠른 참조
+### Quick Reference
 
-| 데이터셋 | 클래스 | 크기 | 문서 길이 | 태스크 |
-|----------|--------|------|----------|--------|
-| **Yelp** | 5 | 650K | 중간 | 감성 분류 |
-| **IMDB** | 2 | 50K | 중간 | 감성 분류 |
-| **AG News** | 4 | 120K | 짧음 | 토픽 분류 |
-| **DBpedia** | 14 | 630K | 짧음 | 토픽 분류 |
-| **Yahoo Answers** | 10 | 1.4M | 중간 | Q&A 분류 |
-| **20 Newsgroups** | 20 | 20K | 중간 | 토픽 분류 |
+| Dataset | Classes | Size | Doc Length | Task |
+|---------|---------|------|------------|------|
+| **Yelp** | 5 | 650K | Medium | Sentiment |
+| **IMDB** | 2 | 50K | Medium | Sentiment |
+| **AG News** | 4 | 120K | Short | Topic |
+| **DBpedia** | 14 | 630K | Short | Topic |
+| **Yahoo Answers** | 10 | 1.4M | Medium | Q&A |
+| **20 Newsgroups** | 20 | 20K | Medium | Topic |
 
-### 상세 정보
+### Detailed Information
 
 #### Yelp Review Full
 - **HuggingFace**: `yelp_review_full`
-- **클래스**: 1-5 star ratings
-- **용도**: 감성 분석 기준 데이터셋
-- **특징**: 다양한 길이의 리뷰, 균형 잡힌 클래스
+- **Classes**: 1-5 star ratings
+- **Use case**: Sentiment analysis benchmark
+- **Features**: Various review lengths, balanced classes
 
 #### IMDB
 - **HuggingFace**: `imdb`
-- **클래스**: Positive / Negative
-- **용도**: 이진 감성 분류
-- **특징**: 영화 리뷰, 긴 텍스트
+- **Classes**: Positive / Negative
+- **Use case**: Binary sentiment classification
+- **Features**: Movie reviews, long texts
 
 #### AG News
 - **HuggingFace**: `ag_news`
-- **클래스**: World, Sports, Business, Sci/Tech
-- **용도**: 뉴스 토픽 분류
-- **특징**: 짧은 뉴스 기사
+- **Classes**: World, Sports, Business, Sci/Tech
+- **Use case**: News topic classification
+- **Features**: Short news articles
 
 #### DBpedia
 - **HuggingFace**: `dbpedia_14`
-- **클래스**: 14개 위키피디아 카테고리
-- **용도**: 대규모 다중 클래스 분류
-- **특징**: 구조화된 짧은 설명
+- **Classes**: 14 Wikipedia categories
+- **Use case**: Large-scale multi-class classification
+- **Features**: Structured short descriptions
 
 #### Yahoo Answers
 - **HuggingFace**: `yahoo_answers_topics`
-- **클래스**: 10개 토픽 (Science, Health, Sports, ...)
-- **용도**: Q&A 토픽 분류
-- **특징**: 질문 + 답변 결합
+- **Classes**: 10 topics (Science, Health, Sports, ...)
+- **Use case**: Q&A topic classification
+- **Features**: Question + answer combined
 
 #### 20 Newsgroups
 - **HuggingFace**: `SetFit/20_newsgroups`
-- **클래스**: 20개 뉴스그룹
-- **용도**: 다중 클래스 분류
-- **특징**: 클래식 NLP 벤치마크
+- **Classes**: 20 newsgroups
+- **Use case**: Multi-class classification
+- **Features**: Classic NLP benchmark
 
 ---
 
-## Python에서 사용
+## Usage in Python
 
-### 빠른 로드
+### Quick Load
 
 ```python
 from hmcan.data import quick_load, list_datasets
 
-# 사용 가능한 데이터셋 확인
+# List available datasets
 list_datasets()
 
-# 데이터셋 로드
+# Load dataset
 train, test, num_classes, labels = quick_load("imdb", max_samples=10000)
 print(f"Classes: {num_classes}")
 print(f"Labels: {labels}")
 ```
 
-### 상세 로드
+### Detailed Load
 
 ```python
 from hmcan.data import load_classification_dataset, get_class_labels
 
-# 데이터셋 로드
+# Load dataset
 train_data, test_data, info = load_classification_dataset(
     name="ag_news",
     max_samples=10000,
     seed=42
 )
 
-# 정보 확인
+# Check info
 print(f"Dataset: {info.name}")
 print(f"Classes: {info.num_classes}")
 print(f"Train: {len(train_data)}, Test: {len(test_data)}")
 
-# 클래스 레이블
+# Class labels
 labels = get_class_labels("ag_news")
 print(f"Labels: {labels}")
 ```
 
-### Colab에서 사용
+### Usage in Colab
 
 ```python
 from datasets import load_dataset
 
-# 직접 HuggingFace에서 로드
+# Load directly from HuggingFace
 dataset = load_dataset("imdb")
 train = dataset["train"]
 test = dataset["test"]
@@ -110,58 +110,58 @@ test = dataset["test"]
 
 ---
 
-## Yelp 데이터 (기존 방식)
+## Yelp Data (Legacy Method)
 
-HMCAN 원본 모델용 Yelp 데이터 준비:
+Preparing Yelp data for original HMCAN model:
 
-데이터 파이프라인:
-1. Yelp 리뷰 다운로드 (Hugging Face)
-2. GloVe 임베딩 다운로드
-3. 텍스트 전처리 및 토큰화
-4. 어휘 사전 생성
-5. 데이터 저장
+Data Pipeline:
+1. Download Yelp reviews (Hugging Face)
+2. Download GloVe embeddings
+3. Text preprocessing and tokenization
+4. Build vocabulary
+5. Save data
 
-## 빠른 시작
+## Quick Start
 
 ```bash
-# 기본 설정으로 데이터 다운로드 (10,000 샘플)
+# Download with default settings (10,000 samples)
 python scripts/download_data.py
 ```
 
-## 상세 옵션
+## Detailed Options
 
 ```bash
 python scripts/download_data.py \
-    --data-dir data \           # 데이터 저장 경로
-    --max-samples 10000 \       # 최대 샘플 수
-    --embedding-dim 50 \        # 임베딩 차원 (50, 100, 200, 300)
-    --min-freq 5 \              # 최소 단어 빈도
-    --max-vocab 50000           # 최대 어휘 크기
+    --data-dir data \           # Data save path
+    --max-samples 10000 \       # Maximum samples
+    --embedding-dim 50 \        # Embedding dimension (50, 100, 200, 300)
+    --min-freq 5 \              # Minimum word frequency
+    --max-vocab 50000           # Maximum vocabulary size
 ```
 
-### 옵션 설명
+### Option Description
 
-| 옵션 | 기본값 | 설명 |
-|------|--------|------|
-| `--data-dir` | `data` | 데이터 저장 디렉토리 |
-| `--max-samples` | `10000` | 다운로드할 최대 리뷰 수 |
-| `--embedding-dim` | `50` | GloVe 임베딩 차원 |
-| `--min-freq` | `5` | 어휘에 포함할 최소 단어 빈도 |
-| `--max-vocab` | `50000` | 최대 어휘 사전 크기 |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--data-dir` | `data` | Data storage directory |
+| `--max-samples` | `10000` | Maximum number of reviews to download |
+| `--embedding-dim` | `50` | GloVe embedding dimension |
+| `--min-freq` | `5` | Minimum word frequency for vocabulary |
+| `--max-vocab` | `50000` | Maximum vocabulary size |
 
-## 생성되는 파일
+## Generated Files
 
 ```
 data/
 ├── embeddings/
-│   └── glove.6B.50d.txt       # GloVe 원본 파일 (~160MB)
+│   └── glove.6B.50d.txt       # Original GloVe file (~160MB)
 └── processed/
-    ├── word2idx.json          # 어휘 사전 (word → index)
-    ├── embeddings_50d.npz     # 어휘에 맞게 추출된 임베딩
-    └── yelp_processed.npz     # 전처리된 문서 데이터
+    ├── word2idx.json          # Vocabulary (word → index)
+    ├── embeddings_50d.npz     # Extracted embeddings for vocabulary
+    └── yelp_processed.npz     # Preprocessed document data
 ```
 
-## 데이터 형식
+## Data Format
 
 ### word2idx.json
 ```json
@@ -175,53 +175,53 @@ data/
 ```
 
 ### yelp_processed.npz
-각 문서는 다음 형식으로 저장:
+Each document is stored in the following format:
 ```python
 {
-    "document": [[1, 23, 45, ...], [67, 89, ...], ...],  # 문장별 단어 인덱스
-    "label": 3  # 0-4 (별점 1-5)
+    "document": [[1, 23, 45, ...], [67, 89, ...], ...],  # Word indices per sentence
+    "label": 3  # 0-4 (star rating 1-5)
 }
 ```
 
-## 전처리 과정
+## Preprocessing Steps
 
-1. **문장 분리**: NLTK `sent_tokenize`
-2. **단어 토큰화**: NLTK `word_tokenize`
-3. **소문자 변환**: 모든 텍스트
-4. **구두점 제거**: 특수문자 제거
-5. **빈 문장 필터링**: 최소 1개 단어 필요
-6. **OOV 처리**: 어휘에 없는 단어 → `<UNK>`
+1. **Sentence splitting**: NLTK `sent_tokenize`
+2. **Word tokenization**: NLTK `word_tokenize`
+3. **Lowercasing**: All text
+4. **Punctuation removal**: Remove special characters
+5. **Empty sentence filtering**: Minimum 1 word required
+6. **OOV handling**: Words not in vocabulary → `<UNK>`
 
-## 데이터셋 통계
+## Dataset Statistics
 
-기본 설정 (10,000 샘플) 기준:
-- 학습: 8,000 샘플 (80%)
-- 검증: 1,000 샘플 (10%)
-- 테스트: 1,000 샘플 (10%)
-- 어휘 크기: ~15,000-20,000 단어
-- 평균 문장 수/문서: ~8-10
-- 평균 단어 수/문장: ~15-20
+Based on default settings (10,000 samples):
+- Train: 8,000 samples (80%)
+- Validation: 1,000 samples (10%)
+- Test: 1,000 samples (10%)
+- Vocabulary size: ~15,000-20,000 words
+- Average sentences/document: ~8-10
+- Average words/sentence: ~15-20
 
-## 커스텀 데이터 사용
+## Custom Data Usage
 
-### 1. 데이터 형식 맞추기
+### 1. Prepare Data Format
 
 ```python
-# 문서 리스트 준비
+# Prepare document list
 documents = [
-    [[1, 2, 3], [4, 5, 6, 7]],  # 문서 1: 2개 문장
-    [[8, 9], [10, 11, 12]],     # 문서 2: 2개 문장
+    [[1, 2, 3], [4, 5, 6, 7]],  # Document 1: 2 sentences
+    [[8, 9], [10, 11, 12]],     # Document 2: 2 sentences
     ...
 ]
-labels = [0, 3, ...]  # 0-4 클래스 레이블
+labels = [0, 3, ...]  # 0-4 class labels
 
-# npz로 저장
+# Save as npz
 import numpy as np
 data = [{"document": doc, "label": label} for doc, label in zip(documents, labels)]
 np.savez_compressed("data/processed/custom_data.npz", data=np.array(data, dtype=object))
 ```
 
-### 2. 어휘 사전 생성
+### 2. Create Vocabulary
 
 ```python
 import json
@@ -231,7 +231,7 @@ with open("data/processed/word2idx.json", "w") as f:
     json.dump(word2idx, f)
 ```
 
-### 3. 임베딩 준비 (선택)
+### 3. Prepare Embeddings (Optional)
 
 ```python
 import numpy as np
@@ -242,13 +242,13 @@ embeddings = np.random.randn(vocab_size, embedding_dim).astype(np.float32)
 np.savez_compressed("data/processed/embeddings_50d.npz", embeddings=embeddings)
 ```
 
-## 메모리 고려사항
+## Memory Considerations
 
-| 샘플 수 | 대략적 메모리 |
-|---------|---------------|
+| Sample Count | Approximate Memory |
+|--------------|-------------------|
 | 10,000 | ~500 MB |
 | 50,000 | ~2 GB |
 | 100,000 | ~4 GB |
-| 전체 (650K) | ~25 GB |
+| Full (650K) | ~25 GB |
 
-큰 데이터셋의 경우 `--max-samples`로 제한하거나 청크 단위 처리 권장.
+For large datasets, use `--max-samples` to limit or process in chunks.

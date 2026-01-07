@@ -1,56 +1,56 @@
-# 학습 가이드
+# Training Guide
 
-## 빠른 시작
+## Quick Start
 
 ```bash
-# HMCAN 학습 (기본)
+# Train HMCAN (default)
 python -m hmcan train --config configs/hmcan.yaml
 
-# HAN 학습 (베이스라인)
+# Train HAN (baseline)
 python -m hmcan train --config configs/han.yaml
 
-# HCAN 학습
+# Train HCAN
 python -m hmcan train --config configs/hcan.yaml
 ```
 
-## 학습 옵션
+## Training Options
 
 ```bash
 python -m hmcan train \
-    --config configs/hmcan.yaml \  # 설정 파일 (필수)
-    --resume outputs/exp/checkpoints/checkpoint_epoch_010.pt \  # 체크포인트에서 재개
-    --seed 42 \                    # 랜덤 시드 오버라이드
-    --device cuda                  # 디바이스 오버라이드
+    --config configs/hmcan.yaml \  # Config file (required)
+    --resume outputs/exp/checkpoints/checkpoint_epoch_010.pt \  # Resume from checkpoint
+    --seed 42 \                    # Override random seed
+    --device cuda                  # Override device
 ```
 
-## 설정 파일 구조
+## Configuration File Structure
 
-`configs/hmcan.yaml` 예시:
+Example `configs/hmcan.yaml`:
 
 ```yaml
-# 모델 설정
+# Model settings
 model:
-  name: hmcan                 # 모델 종류: han, hcan, hmcan
-  vocab_size: 50000           # 어휘 크기 (자동 설정됨)
-  embedding_dim: 50           # 임베딩 차원
-  attention_dim: 50           # 어텐션 차원
-  num_classes: 5              # 출력 클래스 수
-  dropout: 0.1                # 드롭아웃 확률
-  conv_kernel_size: 3         # Conv1D 커널 크기 (HMCAN)
-  freeze_pretrained: true     # 사전학습 임베딩 고정
+  name: hmcan                 # Model type: han, hcan, hmcan
+  vocab_size: 50000           # Vocabulary size (auto-set)
+  embedding_dim: 50           # Embedding dimension
+  attention_dim: 50           # Attention dimension
+  num_classes: 5              # Number of output classes
+  dropout: 0.1                # Dropout probability
+  conv_kernel_size: 3         # Conv1D kernel size (HMCAN)
+  freeze_pretrained: true     # Freeze pretrained embeddings
 
-# 학습 설정
+# Training settings
 training:
-  num_epochs: 30              # 에폭 수
-  learning_rate: 2.0e-5       # 학습률
-  weight_decay: 0.0           # 가중치 감쇠
+  num_epochs: 30              # Number of epochs
+  learning_rate: 2.0e-5       # Learning rate
+  weight_decay: 0.0           # Weight decay
   beta1: 0.9                  # Adam beta1
   beta2: 0.99                 # Adam beta2
-  max_grad_norm: 1.0          # 그래디언트 클리핑
-  early_stopping: true        # 조기 종료
-  patience: 5                 # 조기 종료 인내심
+  max_grad_norm: 1.0          # Gradient clipping
+  early_stopping: true        # Early stopping
+  patience: 5                 # Early stopping patience
 
-# 데이터 설정
+# Data settings
 data:
   data_dir: data
   vocab_path: data/processed/word2idx.json
@@ -58,173 +58,173 @@ data:
   train_ratio: 0.8
   val_ratio: 0.1
   test_ratio: 0.1
-  max_samples: null           # null = 전체 데이터
+  max_samples: null           # null = all data
 
-# 일반 설정
+# General settings
 seed: 14
 device: auto                  # auto, cpu, cuda, mps
 output_dir: outputs
 experiment_name: hmcan_yelp
 
-# 로깅
-use_tensorboard: true         # TensorBoard 사용
-use_wandb: false              # Weights & Biases 사용
+# Logging
+use_tensorboard: true         # Use TensorBoard
+use_wandb: false              # Use Weights & Biases
 ```
 
-## 학습 과정
+## Training Process
 
-### 1. 초기화
-- 랜덤 시드 설정
-- 디바이스 선택 (GPU/MPS/CPU)
-- 데이터 로딩 및 분할
-- 모델 생성
+### 1. Initialization
+- Set random seed
+- Select device (GPU/MPS/CPU)
+- Load and split data
+- Create model
 
-### 2. 에폭 루프
+### 2. Epoch Loop
 ```
 for epoch in epochs:
-    # 학습
+    # Training
     for document in train_loader:
         forward → loss → backward → update
 
-    # 검증
+    # Validation
     for document in val_loader:
         forward → metrics
 
-    # 체크포인트
+    # Checkpoint
     if best_accuracy:
         save_model()
 
-    # 조기 종료 체크
+    # Early stopping check
     if no_improvement >= patience:
         break
 ```
 
-### 3. 출력 파일
+### 3. Output Files
 
 ```
 outputs/{experiment_name}/
-├── config.yaml              # 사용된 설정
+├── config.yaml              # Used configuration
 ├── checkpoints/
-│   ├── best_model.pt        # 최고 성능 모델
+│   ├── best_model.pt        # Best performing model
 │   ├── checkpoint_epoch_001.pt
 │   ├── checkpoint_epoch_002.pt
 │   └── ...
-└── logs/                    # TensorBoard 로그
+└── logs/                    # TensorBoard logs
     └── events.out.tfevents.*
 ```
 
-## TensorBoard 모니터링
+## TensorBoard Monitoring
 
 ```bash
-# TensorBoard 실행
+# Run TensorBoard
 tensorboard --logdir outputs/hmcan_yelp/logs
 
-# 브라우저에서 http://localhost:6006 접속
+# Open http://localhost:6006 in browser
 ```
 
-모니터링 가능한 메트릭:
-- `train/loss`: 학습 손실
-- `train/accuracy`: 학습 정확도
-- `val/loss`: 검증 손실
-- `val/accuracy`: 검증 정확도
+Available metrics:
+- `train/loss`: Training loss
+- `train/accuracy`: Training accuracy
+- `val/loss`: Validation loss
+- `val/accuracy`: Validation accuracy
 
-## Weights & Biases 모니터링
+## Weights & Biases Monitoring
 
-### 설정
+### Setup
 
 ```yaml
 # configs/hmcan.yaml
 use_wandb: true
 ```
 
-### 첫 사용 시 로그인
+### First-time Login
 
 ```bash
 wandb login
-# API 키 입력 (https://wandb.ai/authorize 에서 확인)
+# Enter API key (from https://wandb.ai/authorize)
 ```
 
-### 학습 실행
+### Run Training
 
 ```bash
 python -m hmcan train --config configs/hmcan.yaml
 ```
 
-### 기능
+### Features
 
-| 기능 | 설명 |
-|------|------|
-| **실시간 대시보드** | 웹에서 학습 진행 상황 확인 |
-| **하이퍼파라미터 추적** | 모든 설정 자동 저장 |
-| **실험 비교** | 여러 실험 결과 비교 |
-| **모델 아티팩트** | best_model.pt 자동 저장 |
-| **팀 공유** | 링크로 결과 공유 |
+| Feature | Description |
+|---------|-------------|
+| **Real-time dashboard** | Monitor training progress on web |
+| **Hyperparameter tracking** | Auto-save all settings |
+| **Experiment comparison** | Compare multiple experiments |
+| **Model artifacts** | Auto-save best_model.pt |
+| **Team sharing** | Share results via link |
 
-### 로깅되는 메트릭
+### Logged Metrics
 
 ```
-train/loss          # 학습 손실
-train/accuracy      # 학습 정확도
-val/loss            # 검증 손실
-val/accuracy        # 검증 정확도
-learning_rate       # 학습률
-epoch               # 에폭
+train/loss          # Training loss
+train/accuracy      # Training accuracy
+val/loss            # Validation loss
+val/accuracy        # Validation accuracy
+learning_rate       # Learning rate
+epoch               # Epoch
 ```
 
-### 오프라인 모드
+### Offline Mode
 
-인터넷 연결 없이 학습 후 나중에 동기화:
+Train without internet and sync later:
 
 ```bash
-# 오프라인 모드로 학습
+# Train in offline mode
 WANDB_MODE=offline python -m hmcan train --config configs/hmcan.yaml
 
-# 나중에 동기화
+# Sync later
 wandb sync outputs/hmcan_yelp/wandb/offline-run-*
 ```
 
-## 하이퍼파라미터 튜닝
+## Hyperparameter Tuning
 
-### 학습률
+### Learning Rate
 
 ```yaml
-# 권장 범위: 1e-5 ~ 1e-4
+# Recommended range: 1e-5 ~ 1e-4
 training:
-  learning_rate: 2.0e-5  # 기본값 (원본 논문)
+  learning_rate: 2.0e-5  # Default (from original paper)
 ```
 
-### 드롭아웃
+### Dropout
 
 ```yaml
-# 과적합 시 증가, 언더피팅 시 감소
+# Increase if overfitting, decrease if underfitting
 model:
-  dropout: 0.1   # 기본값
-  # dropout: 0.2  # 과적합 방지
-  # dropout: 0.05 # 더 많은 용량
+  dropout: 0.1   # Default
+  # dropout: 0.2  # Prevent overfitting
+  # dropout: 0.05 # More capacity
 ```
 
-### 임베딩 차원
+### Embedding Dimension
 
 ```yaml
-# 더 큰 차원 = 더 많은 표현력, 더 많은 메모리
+# Larger dimension = more expressiveness, more memory
 model:
-  embedding_dim: 50   # 기본값
-  # embedding_dim: 100  # 더 풍부한 표현
-  # embedding_dim: 300  # GloVe 최대
+  embedding_dim: 50   # Default
+  # embedding_dim: 100  # Richer representation
+  # embedding_dim: 300  # GloVe maximum
 ```
 
-## 체크포인트 관리
+## Checkpoint Management
 
-### 학습 재개
+### Resume Training
 
 ```bash
-# 마지막 체크포인트에서 재개
+# Resume from last checkpoint
 python -m hmcan train \
     --config configs/hmcan.yaml \
     --resume outputs/hmcan_yelp/checkpoints/checkpoint_epoch_015.pt
 ```
 
-### 최고 모델 로드
+### Load Best Model
 
 ```python
 import torch
@@ -235,44 +235,44 @@ ckpt = torch.load("outputs/hmcan_yelp/checkpoints/best_model.pt")
 model.load_state_dict(ckpt["model_state_dict"])
 ```
 
-## 학습 팁
+## Training Tips
 
-### 1. 작은 데이터로 테스트
+### 1. Test with Small Data
 
 ```yaml
 data:
-  max_samples: 1000  # 먼저 1000개로 테스트
+  max_samples: 1000  # Test with 1000 samples first
 ```
 
-### 2. 그래디언트 클리핑
+### 2. Gradient Clipping
 
 ```yaml
 training:
-  max_grad_norm: 1.0  # 그래디언트 폭발 방지
+  max_grad_norm: 1.0  # Prevent gradient explosion
 ```
 
-### 3. 조기 종료 활용
+### 3. Use Early Stopping
 
 ```yaml
 training:
   early_stopping: true
-  patience: 5  # 5 에폭 동안 개선 없으면 종료
+  patience: 5  # Stop if no improvement for 5 epochs
 ```
 
-### 4. 시드 고정
+### 4. Fix Seed
 
 ```yaml
-seed: 14  # 재현 가능한 결과
+seed: 14  # Reproducible results
 ```
 
-## 예상 성능
+## Expected Performance
 
-10,000 샘플, 30 에폭 기준:
+Based on 10,000 samples, 30 epochs:
 
-| 모델 | 테스트 정확도 | 학습 시간 (M1 Mac) |
-|------|---------------|-------------------|
-| HAN | ~60.5% | ~30분 |
-| HCAN | ~58.6% | ~20분 |
-| HMCAN | ~61.7% | ~20분 |
+| Model | Test Accuracy | Training Time (M1 Mac) |
+|-------|---------------|------------------------|
+| HAN | ~60.5% | ~30 min |
+| HCAN | ~58.6% | ~20 min |
+| HMCAN | ~61.7% | ~20 min |
 
-*GPU 사용 시 5-10배 빠름*
+*5-10x faster with GPU*

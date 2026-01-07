@@ -1,159 +1,159 @@
-# 설치 가이드
+# Installation Guide
 
-## 요구사항
+## Requirements
 
 - Python >= 3.11
 - PyTorch >= 2.0
-- macOS, Linux, Windows (CUDA 지원)
+- macOS, Linux, Windows (with CUDA support)
 
-## 설치 방법
+## Installation Methods
 
-### 1. uv 사용 (권장)
+### 1. Using uv (Recommended)
 
-[uv](https://github.com/astral-sh/uv)는 빠른 Python 패키지 관리자입니다.
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager.
 
 ```bash
-# uv 설치 (아직 없는 경우)
+# Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 저장소 클론
+# Clone repository
 git clone https://github.com/sucpark/hmcan.git
 cd hmcan
 
-# 의존성 설치 및 가상환경 생성
+# Install dependencies and create virtual environment
 uv sync
 
-# 가상환경 활성화
+# Activate virtual environment
 source .venv/bin/activate
 ```
 
-### 2. pip 사용
+### 2. Using pip
 
 ```bash
-# 저장소 클론
+# Clone repository
 git clone https://github.com/sucpark/hmcan.git
 cd hmcan
 
-# 가상환경 생성
+# Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# 패키지 설치
+# Install package
 pip install -e .
 
-# 개발 의존성 포함 설치
+# Install with dev dependencies
 pip install -e ".[dev]"
 ```
 
-### 3. conda 사용
+### 3. Using conda
 
 ```bash
-# 저장소 클론
+# Clone repository
 git clone https://github.com/sucpark/hmcan.git
 cd hmcan
 
-# conda 환경 생성
+# Create conda environment
 conda create -n hmcan python=3.11
 conda activate hmcan
 
-# PyTorch 설치 (CUDA 버전에 맞게)
+# Install PyTorch (match your CUDA version)
 conda install pytorch torchvision -c pytorch
 
-# 패키지 설치
+# Install package
 pip install -e .
 ```
 
-## 설치 확인
+## Verify Installation
 
 ```bash
-# 버전 확인
+# Check version
 python -m hmcan --version
 
-# 모델 목록 확인
+# List available models
 python -m hmcan models
 
-# 모듈 테스트
+# Test module imports
 python -c "from hmcan.models import HAN, HCAN, HMCAN; print('OK')"
 ```
 
-## Weights & Biases 설정 (선택)
+## Weights & Biases Setup (Optional)
 
-실험 추적을 위해 [Weights & Biases](https://wandb.ai)를 사용할 수 있습니다.
+You can use [Weights & Biases](https://wandb.ai) for experiment tracking.
 
-### 1. 계정 생성
+### 1. Create Account
 
-[https://wandb.ai/site](https://wandb.ai/site)에서 무료 계정을 생성합니다.
+Create a free account at [https://wandb.ai/site](https://wandb.ai/site).
 
-### 2. API 키 확인
+### 2. Get API Key
 
-로그인 후 [https://wandb.ai/authorize](https://wandb.ai/authorize)에서 API 키를 복사합니다.
+After logging in, copy your API key from [https://wandb.ai/authorize](https://wandb.ai/authorize).
 
-### 3. 로그인
+### 3. Login
 
 ```bash
 wandb login
-# 프롬프트가 나타나면 API 키 붙여넣기
+# Paste API key when prompted
 ```
 
-또는 환경 변수로 설정:
+Or set via environment variable:
 
 ```bash
 export WANDB_API_KEY="your-api-key-here"
 ```
 
-### 4. 설정 파일에서 활성화
+### 4. Enable in Config
 
 ```yaml
 # configs/hmcan.yaml
 use_wandb: true
 ```
 
-### 확인
+### Verify
 
 ```bash
-# wandb 연결 테스트
+# Test wandb connection
 python -c "import wandb; wandb.login(); print('OK')"
 ```
 
-> **참고**: wandb 없이도 TensorBoard로 학습을 모니터링할 수 있습니다.
+> **Note**: You can still monitor training with TensorBoard without wandb.
 
-## GPU 설정
+## GPU Setup
 
 ### CUDA (NVIDIA GPU)
 
 ```bash
-# CUDA 버전 확인
+# Check CUDA version
 nvidia-smi
 
-# PyTorch CUDA 확인
+# Verify PyTorch CUDA
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
 ### MPS (Apple Silicon)
 
 ```bash
-# MPS 확인 (M1/M2/M3 Mac)
+# Check MPS (M1/M2/M3 Mac)
 python -c "import torch; print(f'MPS available: {torch.backends.mps.is_available()}')"
 ```
 
-## 문제 해결
+## Troubleshooting
 
-### NLTK 데이터 오류
+### NLTK Data Error
 
 ```bash
 python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 ```
 
-### PyTorch 버전 충돌
+### PyTorch Version Conflict
 
 ```bash
-# 기존 PyTorch 제거 후 재설치
+# Uninstall and reinstall PyTorch
 pip uninstall torch torchvision
 pip install torch torchvision
 ```
 
-### 메모리 부족
+### Out of Memory
 
-`configs/*.yaml`에서 다음 설정 조정:
-- `data.max_samples`: 샘플 수 줄이기
-- `model.embedding_dim`: 임베딩 차원 줄이기
+Adjust the following settings in `configs/*.yaml`:
+- `data.max_samples`: Reduce sample count
+- `model.embedding_dim`: Reduce embedding dimension
