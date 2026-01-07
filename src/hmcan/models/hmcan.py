@@ -9,8 +9,10 @@ HMCAN is the main model with:
 """
 
 from typing import Dict, Optional, Any
+
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .base import BaseHierarchicalModel
 from .layers.embeddings import DualEmbedding
@@ -140,7 +142,7 @@ class HMCAN(BaseHierarchicalModel):
         # -> (num_sents, 1, max_words)
         word_attn_scores = torch.bmm(Tw, word_encoded.transpose(1, 2))
         word_attn_scores = word_attn_scores / (self.attention_dim**0.5)
-        word_attn_weights = self.dropout(torch.softmax(word_attn_scores, dim=-1))
+        word_attn_weights = self.dropout(F.softmax(word_attn_scores, dim=-1))
 
         # Weighted sum: (num_sents, 1, max_words) @ (num_sents, max_words, attention_dim)
         # -> (num_sents, 1, attention_dim)
@@ -157,7 +159,7 @@ class HMCAN(BaseHierarchicalModel):
         # (1, 1, attention_dim) @ (1, attention_dim, num_sents) -> (1, 1, num_sents)
         sent_attn_scores = torch.bmm(self.sentence_target, sent_encoded.transpose(1, 2))
         sent_attn_scores = sent_attn_scores / (self.attention_dim**0.5)
-        sent_attn_weights = self.dropout(torch.softmax(sent_attn_scores, dim=-1))
+        sent_attn_weights = self.dropout(F.softmax(sent_attn_scores, dim=-1))
 
         # Weighted sum: (1, 1, num_sents) @ (1, num_sents, attention_dim)
         # -> (1, 1, attention_dim) -> (1, attention_dim)
@@ -185,14 +187,14 @@ class HMCAN(BaseHierarchicalModel):
             word_encoded = self.word_encoder(word_embeds)
 
             Tw = self.word_target.expand(num_sentences, -1, -1)
-            word_attn = torch.softmax(
+            word_attn = F.softmax(
                 torch.bmm(Tw, word_encoded.transpose(1, 2)) / (self.attention_dim**0.5),
                 dim=-1,
             )
             sent_embeds = torch.bmm(word_attn, word_encoded).transpose(0, 1)
 
             sent_encoded = self.sentence_encoder(sent_embeds)
-            sent_attn = torch.softmax(
+            sent_attn = F.softmax(
                 torch.bmm(self.sentence_target, sent_encoded.transpose(1, 2))
                 / (self.attention_dim**0.5),
                 dim=-1,

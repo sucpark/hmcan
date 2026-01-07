@@ -9,14 +9,16 @@ This script:
 4. Saves processed data and embeddings
 """
 
+from __future__ import annotations
+
 import json
-import urllib.request
 import zipfile
-from pathlib import Path
 from collections import Counter
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
+import requests
 from tqdm import tqdm
 
 # Optional: use datasets library if available
@@ -62,12 +64,17 @@ def download_glove(data_dir: Path, dim: int = 50) -> Path:
 
     if not zip_path.exists():
         print(f"Downloading GloVe embeddings from {url}...")
-        with tqdm(unit="B", unit_scale=True, desc="Downloading") as pbar:
-            def report_hook(count, block_size, total_size):
-                pbar.total = total_size
-                pbar.update(block_size)
+        response = requests.get(url, stream=True, timeout=60)
+        response.raise_for_status()
+        total_size = int(response.headers.get("content-length", 0))
 
-            urllib.request.urlretrieve(url, zip_path, reporthook=report_hook)
+        with (
+            open(zip_path, "wb") as f,
+            tqdm(total=total_size, unit="B", unit_scale=True, desc="Downloading") as pbar,
+        ):
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+                pbar.update(len(chunk))
 
     # Extract
     print("Extracting GloVe embeddings...")

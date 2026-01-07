@@ -247,26 +247,39 @@ def evaluate(checkpoint: Path, config: Optional[Path], device: str):
 @click.option("--embedding-dim", type=int, default=50, help="Embedding dimension")
 def download(data_dir: str, max_samples: int, embedding_dim: int):
     """Download and prepare the Yelp dataset."""
+    import subprocess
     import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
 
-    try:
-        from scripts.download_data import prepare_data
-        prepare_data(
-            data_dir=data_dir,
-            max_samples=max_samples,
-            embedding_dim=embedding_dim,
+    # Find script in common locations
+    candidates = [
+        Path(__file__).parent.parent.parent.parent / "scripts" / "download_data.py",
+        Path.cwd() / "scripts" / "download_data.py",
+    ]
+
+    script_path = None
+    for candidate in candidates:
+        if candidate.exists():
+            script_path = candidate
+            break
+
+    if script_path is None:
+        raise click.ClickException(
+            "download_data.py script not found. Please run from the project root directory."
         )
-    except ImportError:
-        # Run as subprocess if import fails
-        import subprocess
-        script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "download_data.py"
-        subprocess.run([
-            sys.executable, str(script_path),
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script_path),
             "--data-dir", data_dir,
             "--max-samples", str(max_samples),
             "--embedding-dim", str(embedding_dim),
-        ], check=True)
+        ],
+        check=False,
+    )
+
+    if result.returncode != 0:
+        raise click.ClickException(f"Data download failed with code {result.returncode}")
 
 
 @cli.command()

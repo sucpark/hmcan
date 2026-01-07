@@ -1,13 +1,18 @@
 """Training loop implementation."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
 import torch
 import torch.nn as nn
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from torch.optim.lr_scheduler import LRScheduler
 
 from ..models.base import BaseHierarchicalModel
 from ..utils.checkpoint import CheckpointManager
@@ -34,7 +39,7 @@ class Trainer:
         optimizer: Optimizer,
         criterion: nn.Module,
         device: torch.device,
-        scheduler: Optional[_LRScheduler] = None,
+        scheduler: Optional[LRScheduler] = None,
         callbacks: Optional[List[Callback]] = None,
         checkpoint_dir: Optional[Path | str] = None,
         max_grad_norm: Optional[float] = None,

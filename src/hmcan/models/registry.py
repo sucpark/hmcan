@@ -1,6 +1,8 @@
 """Model registry for creating models by name."""
 
+import inspect
 from typing import Dict, Type, Optional, Any
+
 import torch
 
 from .base import BaseHierarchicalModel
@@ -50,7 +52,6 @@ def create_model(
 
     # Filter kwargs to only include valid arguments for the model
     # This handles when config has parameters for other models
-    import inspect
     valid_params = set(inspect.signature(model_class.__init__).parameters.keys())
     filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_params}
 

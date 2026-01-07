@@ -39,7 +39,8 @@ class DualEmbedding(nn.Module):
         # Pre-trained embedding (frozen by default)
         self.pretrained = nn.Embedding(vocab_size, embedding_dim, padding_idx=padding_idx)
         if pretrained_embeddings is not None:
-            self.pretrained.weight.data.copy_(pretrained_embeddings)
+            with torch.no_grad():
+                self.pretrained.weight.copy_(pretrained_embeddings)
         if freeze_pretrained:
             self.pretrained.weight.requires_grad = False
 
@@ -146,7 +147,8 @@ class StandardEmbedding(nn.Module):
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=padding_idx)
 
         if pretrained_embeddings is not None:
-            self.embedding.weight.data.copy_(pretrained_embeddings)
+            with torch.no_grad():
+                self.embedding.weight.copy_(pretrained_embeddings)
 
         if freeze:
             self.embedding.weight.requires_grad = False
