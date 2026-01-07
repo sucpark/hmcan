@@ -230,13 +230,13 @@ Expected performance on Yelp reviews (10K samples):
 
 ## Documentation
 
-상세 문서는 [docs/](docs/) 폴더를 참조하세요:
+For detailed documentation, see the [docs/](docs/) folder:
 
-- [설치 가이드](docs/installation.md) - 설치 방법, GPU 설정, 문제 해결
-- [데이터 준비](docs/data.md) - 데이터 다운로드, 전처리, 커스텀 데이터
-- [학습 가이드](docs/training.md) - 학습 실행, 설정, 하이퍼파라미터 튜닝
-- [모델 아키텍처](docs/models.md) - HAN, HCAN, HMCAN 상세 설명
-- [평가 및 추론](docs/evaluation.md) - 테스트, 추론, Attention 시각화
+- [Installation Guide](docs/installation.md) - Installation, GPU setup, troubleshooting
+- [Data Preparation](docs/data.md) - Data download, preprocessing, custom datasets
+- [Training Guide](docs/training.md) - Training, configuration, hyperparameter tuning
+- [Model Architecture](docs/models.md) - HAN, HCAN, HMCAN details
+- [Evaluation & Inference](docs/evaluation.md) - Testing, inference, attention visualization
 
 ## Requirements
 
